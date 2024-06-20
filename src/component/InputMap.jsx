@@ -23,7 +23,11 @@ function InputMap() {
 
   async function getAddress() {
     try {
-      const results = await axios.get(`http://ip-api.com/json/`);
+      const results = await axios.get(
+        `https://geo.ipify.org/api/v2/country,city?apiKey=${
+          import.meta.env.VITE_IP_API_KEY
+        }&ipAddress=`
+      );
       setAddress(results.data);
     } catch (error) {
       console.log(error);
@@ -32,7 +36,11 @@ function InputMap() {
 
   async function getIpAddress() {
     try {
-      const results = await axios.get(`http://ip-api.com/json/${IpAddress}`);
+      const results = await axios.get(
+        `https://geo.ipify.org/api/v2/country,city?apiKey=${
+          import.meta.env.VITE_IP_API_KEY
+        }&ipAddress=${IpAddress}`
+      );
       setAddress(results.data);
     } catch (error) {
       console.log(error);
@@ -70,35 +78,38 @@ function InputMap() {
           </form>
         </div>
         <div className="address-info">
-          <ul className="ip-list">
-            <li>
-              <h6>IP ADDRESS</h6>
-              <h3>{address.query}</h3>
-            </li>
-            <hr />
-            <li>
-              <h6>LOCATION</h6>
-              <h3>
-                {address.regionName}, {address.countryCode} {address.zip}
-              </h3>
-            </li>
-            <hr />
-            <li>
-              <h6>TIMEZONE</h6>
-              <h3>{address.timezone}</h3>
-            </li>
-            <hr />
-            <li>
-              <h6>ISP</h6>
-              <h3>{address.isp}</h3>
-            </li>
-          </ul>
+          {address.location && (
+            <ul className="ip-list">
+              <li>
+                <h6>IP ADDRESS</h6>
+                <h3>{address.ip}</h3>
+              </li>
+              <hr />
+              <li>
+                <h6>LOCATION</h6>
+                <h3>
+                  {address.location.city}, {address.location.country}{" "}
+                  {address.location.postalCode}
+                </h3>
+              </li>
+              <hr />
+              <li>
+                <h6>TIMEZONE</h6>
+                <h3>UTC {address.location.timezone}</h3>
+              </li>
+              <hr />
+              <li>
+                <h6>ISP</h6>
+                <h3>{address.isp}</h3>
+              </li>
+            </ul>
+          )}
         </div>
       </div>
       <div>
-        {address.lat && address.lon ? (
+        {address.location ? (
           <MapContainer
-            center={[address.lat, address.lon]}
+            center={[address.location.lat, address.location.lng]}
             zoom={13}
             zoomControl={false}
           >
@@ -106,14 +117,19 @@ function InputMap() {
               url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
               attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
             />
-            <Marker position={[address.lat, address.lon]} icon={customIcon}>
+            <Marker
+              position={[address.location.lat, address.location.lng]}
+              icon={customIcon}
+            >
               <Popup className="popup">
                 <h3>
-                  {address.lat}, {address.lon}
+                  {address.location.lat}, {address.location.lng}
                 </h3>
               </Popup>
             </Marker>
-            <SetViewOnClick coords={[address.lat, address.lon]} />
+            <SetViewOnClick
+              coords={[address.location.lat, address.location.lng]}
+            />
           </MapContainer>
         ) : (
           <div className="loading-box">
